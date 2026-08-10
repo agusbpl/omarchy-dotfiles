@@ -35,12 +35,17 @@ cd ~/omarchy-dotfiles
 stow -D hypr omarchy scripts
 ```
 
-## Push to GitHub
+## Push Updates to GitHub
 ```bash
 cd ~/omarchy-dotfiles
-git remote add origin git@github.com:YOUR_USERNAME/omarchy-dotfiles.git
-git branch -M main
 git push -u origin main
+```
+
+## Clone on a New Machine
+```bash
+git clone git@github.com:agusbpl/omarchy-dotfiles.git ~/omarchy-dotfiles
+cd ~/omarchy-dotfiles
+stow hypr omarchy scripts
 ```
 
 ## Features Included
