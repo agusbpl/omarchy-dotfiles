@@ -1,0 +1,25 @@
+# Security & Secrets
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.crt
+*.id_rsa
+*.id_ed25519
+*.secret
+*.token
+credentials.json
+secrets.json
+
+# Temporary & Backup Files
+*.swp
+*.swo
+*~
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
