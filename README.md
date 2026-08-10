@@ -1,11 +1,11 @@
-# My Omarchy & Hyprland Dotfiles
+# Omarchy Dotfiles
 
 Personal configurations for Omarchy (Arch Linux + Hyprland), featuring custom keybindings and the Data Science Omarchy Menu extension.
 
 ## Structure
 
 ```
-~/dotfiles/
+~/omarchy-dotfiles/
 ├── hypr/               # Hyprland / Qtile keybindings & submaps
 │   └── .config/hypr/qtile_binds.conf
 ├── omarchy/            # Custom Omarchy menu extensions (Data Science submenus)
@@ -25,16 +25,24 @@ sudo pacman -S stow
 To link configurations into your `$HOME` directory:
 
 ```bash
-cd ~/dotfiles
+cd ~/omarchy-dotfiles
 stow hypr omarchy scripts
 ```
 
 To remove symlinks when needed:
 ```bash
-cd ~/dotfiles
+cd ~/omarchy-dotfiles
 stow -D hypr omarchy scripts
 ```
 
+## Push to GitHub
+```bash
+cd ~/omarchy-dotfiles
+git remote add origin git@github.com:YOUR_USERNAME/omarchy-dotfiles.git
+git branch -M main
+git push -u origin main
+```
+
 ## Features Included
-- **Data Science Omarchy Submenu**: Access documentation for Python, Pandas, Polars, NumPy, Matplotlib, Plotly, Scikit-Learn, PyTorch, TensorFlow, Numba, SciPy, Seaborn, Hugging Face, Streamlit, JupyterLab, SQL, PostgreSQL, and Metabase.
-- **Hyprland Submaps**: Access documentation directly via `Alt + L` followed by the single-letter shortcut.
+- **Data Science Omarchy Submenu**: Categorized submenus for Data Analysis, Visualization, Machine Learning, Databases, and Environments.
+- **Hyprland Submaps**: Access documentation directly via `Alt + L` followed by single-letter shortcuts.
