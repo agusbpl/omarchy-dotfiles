@@ -1,13 +1,26 @@
 -- Omarchy Hyprland Submap Keybindings & Vim Focus Controls (Lua Config)
 
+local function dismiss_cheatsheet()
+  hl.exec_cmd("python /home/spogus/.config/hypr/scripts/submap_hud.py hide")
+end
+
+local function reset_submap()
+  hl.dispatch(hl.dsp.submap("reset"))
+  dismiss_cheatsheet()
+end
+
+local function show_submap_cheatsheet(submap_name)
+  hl.exec_cmd(string.format("python /home/spogus/.config/hypr/scripts/submap_hud.py show %q", submap_name))
+end
+
 local function submap_cmd(keys, description, command)
   local function action()
+    reset_submap()
     if type(command) == "string" then
       hl.exec_cmd(command)
     elseif type(command) == "function" then
       command()
     end
-    hl.dispatch(hl.dsp.submap("reset"))
   end
 
   local keys_table = type(keys) == "table" and keys or { keys }
@@ -16,15 +29,52 @@ local function submap_cmd(keys, description, command)
   end
 end
 
--- Helper to register a submap trigger with visual tag notification (bound once per key)
+-- Helper to register a submap trigger with cheatsheet HUD (bound once per key)
 local function bind_submap(key_char, submap_name)
   local function enter_submap()
-    hl.exec_cmd(string.format('hyprctl notify 1 2500 "rgb(cba6f7)" "State: %s"', submap_name))
+    show_submap_cheatsheet(submap_name)
     hl.dispatch(hl.dsp.submap(submap_name))
   end
 
   hl.bind("ALT + " .. key_char:lower(), enter_submap)
 end
+
+-- =========================================================
+-- MASTER HUB: ALT + ENTER -> Alt de los Alts
+-- =========================================================
+hl.define_submap("Hub", function()
+  local targets = {
+    { keys = { "s", "S" }, name = "System" },
+    { keys = { "l", "L" }, name = "Learning" },
+    { keys = { "p", "P" }, name = "Programming" },
+    { keys = { "o", "O" }, name = "Office" },
+    { keys = { "i", "I" }, name = "IA" },
+    { keys = { "n", "N" }, name = "NAV" },
+    { keys = { "u", "U" }, name = "UNLP" },
+    { keys = { "m", "M" }, name = "Menus" },
+    { keys = { "r", "R" }, name = "Reminders" },
+    { keys = { "t", "T" }, name = "TTS" },
+    { keys = { "v", "V" }, name = "Volume" },
+    { keys = { "b", "B" }, name = "Brightness" },
+  }
+
+  for _, item in ipairs(targets) do
+    for _, k in ipairs(item.keys) do
+      hl.bind(k, function()
+        show_submap_cheatsheet(item.name)
+        hl.dispatch(hl.dsp.submap(item.name))
+      end)
+    end
+  end
+
+  hl.bind("ESCAPE", reset_submap)
+  hl.bind("RETURN", reset_submap)
+end)
+
+hl.bind("ALT + RETURN", function()
+  show_submap_cheatsheet("Hub")
+  hl.dispatch(hl.dsp.submap("Hub"))
+end)
 
 
 -- =========================================================
@@ -61,27 +111,24 @@ hl.define_submap("System", function()
   submap_cmd("f", "Files", "uwsm-app -- nautilus --new-window")
   submap_cmd("m", "Btop", "uwsm-app -- xdg-terminal-exec -e btop")
   submap_cmd("e", "Edit Binds", "uwsm-app -- xdg-terminal-exec -e nvim ~/.config/hypr/bindings.lua")
-  submap_cmd("n", "Network TUI", "uwsm-app -- xdg-terminal-exec -e nmtui")
-  submap_cmd("w", "Next Wallpaper", "omarchy theme bg next")
-  submap_cmd("SHIFT + W", "WiFi Menu", "omarchy-launch-wifi")
-  submap_cmd("SHIFT + B", "Bluetooth Menu", "omarchy-launch-bluetooth")
+  submap_cmd("w", "WiFi Menu", "omarchy-shell shell toggle omarchy.network")
+  submap_cmd("b", "Bluetooth Menu", "omarchy-shell shell toggle omarchy.bluetooth")
   submap_cmd("c", "Activate Camera", "~/Scripts/video_making/camera_activation.sh")
   submap_cmd("r", "Start Recording", "bash -c 'pc=$(hostname | grep -qi hostgus && echo 1 || echo 0); ~/Scripts/video_making/video_start$pc.sh'")
-  submap_cmd("s", "Lock System", "omarchy system lock")
-  submap_cmd("l", "Lock System", "omarchy system lock")
-  submap_cmd("a", "Audio Settings", "omarchy-launch-audio")
-  submap_cmd("p", "Clipboard History", "omarchy-launch-walker -m clipboard")
+  submap_cmd("s", "Screenshot", "sleep 0.08 && omarchy-capture-screenshot")
+  submap_cmd("a", "Audio Settings", "omarchy-shell shell toggle omarchy.audio")
+  submap_cmd("p", "Clipboard History", "omarchy-shell shell toggle omarchy.clipboard")
   submap_cmd("q", "Shutdown", "shutdown now")
 
   hl.bind("v", function()
-    hl.exec_cmd('hyprctl notify 1 2500 "rgb(cba6f7)" "State: Volume"')
+    show_submap_cheatsheet("Volume")
     hl.dispatch(hl.dsp.submap("Volume"))
   end)
-  hl.bind("b", function()
-    hl.exec_cmd('hyprctl notify 1 2500 "rgb(cba6f7)" "State: Brightness"')
+  hl.bind("l", function()
+    show_submap_cheatsheet("Brightness")
     hl.dispatch(hl.dsp.submap("Brightness"))
   end)
-  hl.bind("ESCAPE", function() hl.dispatch(hl.dsp.submap("reset")) end)
+  hl.bind("ESCAPE", reset_submap)
 end)
 bind_submap("S", "System")
 
@@ -116,7 +163,7 @@ hl.define_submap("Learning", function()
   submap_cmd("i", "SciPy Docs", "omarchy-launch-webapp 'https://docs.scipy.org/doc/scipy/'")
   submap_cmd("x", "Seaborn Docs", "omarchy-launch-webapp 'https://seaborn.pydata.org/'")
   submap_cmd("z", "Hugging Face Docs", "omarchy-launch-webapp 'https://huggingface.co/docs/transformers/index'")
-  hl.bind("ESCAPE", function() hl.dispatch(hl.dsp.submap("reset")) end)
+  hl.bind("ESCAPE", reset_submap)
 end)
 bind_submap("L", "Learning")
 
@@ -129,9 +176,9 @@ hl.define_submap("Programming", function()
   submap_cmd("t", "Terminal", "uwsm-app -- xdg-terminal-exec")
   submap_cmd("j", "JupyterLab", "uwsm-app -- xdg-terminal-exec -e jupyter-lab")
   submap_cmd("g", "Lazygit", "uwsm-app -- xdg-terminal-exec -e lazygit")
-  submap_cmd("SHIFT + G", "GitHub Web", "omarchy-launch-webapp 'https://github.com/'")
+  submap_cmd({ "G", "SHIFT + g", "SHIFT + G" }, "GitHub Web", "omarchy-launch-webapp 'https://github.com/'")
   submap_cmd("d", "Discord", "omarchy-launch-webapp 'https://discord.com/channels/@me'")
-  hl.bind("ESCAPE", function() hl.dispatch(hl.dsp.submap("reset")) end)
+  hl.bind("ESCAPE", reset_submap)
 end)
 bind_submap("P", "Programming")
 
@@ -148,9 +195,9 @@ hl.define_submap("Office", function()
   submap_cmd("z", "Zathura PDF", "zathura")
   submap_cmd("t", "DeepL Translator", "omarchy-launch-webapp 'https://www.deepl.com/en/translator'")
   submap_cmd("w", "WordReference", "omarchy-launch-webapp 'https://www.wordreference.com/definicion/'")
-  submap_cmd("SHIFT + W", "Wikipedia ES", "omarchy-launch-webapp 'https://es.wikipedia.org/wiki/'")
+  submap_cmd({"W", "SHIFT + w"}, "Wikipedia ES", "omarchy-launch-webapp 'https://es.wikipedia.org/wiki/'")
   submap_cmd("e", "Excalidraw", "omarchy-launch-webapp 'https://excalidraw.com/'")
-  hl.bind("ESCAPE", function() hl.dispatch(hl.dsp.submap("reset")) end)
+  hl.bind("ESCAPE", reset_submap)
 end)
 bind_submap("O", "Office")
 
@@ -160,7 +207,7 @@ bind_submap("O", "Office")
 -- ---------------------------------------------------------
 hl.define_submap("IA", function()
   submap_cmd("v", "Voice Dictation", "voxtype record toggle")
-  submap_cmd("a", "Omarchy Agent", "omarchy-agent --pick")
+  submap_cmd("a", "Google Gemini", "omarchy-launch-webapp 'https://gemini.google.com/app'")
   submap_cmd("c", "Claude AI", "omarchy-launch-webapp 'https://claude.ai/'")
   submap_cmd("g", "ChatGPT", "omarchy-launch-webapp 'https://chatgpt.com/'")
   submap_cmd("m", "Google Gemini", "omarchy-launch-webapp 'https://gemini.google.com/app'")
@@ -171,7 +218,7 @@ hl.define_submap("IA", function()
   submap_cmd("o", "OpenCode TUI", "uwsm-app -- xdg-terminal-exec -e opencode")
   submap_cmd("x", "Grok AI", "omarchy-launch-webapp 'https://x.com/i/grok'")
   submap_cmd("f", "Phind AI", "omarchy-launch-webapp 'https://www.phind.com/'")
-  hl.bind("ESCAPE", function() hl.dispatch(hl.dsp.submap("reset")) end)
+  hl.bind("ESCAPE", reset_submap)
 end)
 bind_submap("I", "IA")
 
@@ -186,7 +233,7 @@ hl.define_submap("NAV", function()
   submap_cmd("t", "Telegram Web", "omarchy-launch-webapp 'https://web.telegram.org/a/'")
   submap_cmd("w", "WhatsApp Web", "omarchy-launch-or-focus-webapp WhatsApp 'https://web.whatsapp.com/'")
   submap_cmd("x", "X / Twitter", "omarchy-launch-webapp 'https://x.com/'")
-  hl.bind("ESCAPE", function() hl.dispatch(hl.dsp.submap("reset")) end)
+  hl.bind("ESCAPE", reset_submap)
 end)
 bind_submap("N", "NAV")
 
@@ -199,7 +246,7 @@ hl.define_submap("UNLP", function()
   submap_cmd("l", "Cátedras LINTI", "omarchy-launch-webapp 'https://catedras.linti.unlp.edu.ar/index.php?'")
   submap_cmd("i", "IDEAS Informática", "omarchy-launch-webapp 'https://ideas.info.unlp.edu.ar/'")
   submap_cmd("m", "Asignaturas Moodle", "omarchy-launch-webapp 'https://asignaturas.info.unlp.edu.ar/my/'")
-  hl.bind("ESCAPE", function() hl.dispatch(hl.dsp.submap("reset")) end)
+  hl.bind("ESCAPE", reset_submap)
 end)
 bind_submap("U", "UNLP")
 
@@ -217,7 +264,7 @@ hl.define_submap("Menus", function()
   submap_cmd("h", "Hardware Menu", "omarchy-menu toggle hardware")
   submap_cmd("v", "Toggle Top Bar", "omarchy-shell -q bar toggle")
   submap_cmd("k", "Keybindings Menu", "omarchy-menu-keybindings")
-  hl.bind("ESCAPE", function() hl.dispatch(hl.dsp.submap("reset")) end)
+  hl.bind("ESCAPE", reset_submap)
 end)
 bind_submap("M", "Menus")
 
@@ -233,7 +280,7 @@ hl.define_submap("Reminders", function()
   submap_cmd("n", "Set Reminder", "omarchy-menu toggle reminder-set")
   submap_cmd("v", "Show Reminders", "omarchy-reminder show")
   submap_cmd("c", "Clear Reminders", "omarchy-reminder clear")
-  hl.bind("ESCAPE", function() hl.dispatch(hl.dsp.submap("reset")) end)
+  hl.bind("ESCAPE", reset_submap)
 end)
 bind_submap("R", "Reminders")
 
@@ -244,7 +291,7 @@ bind_submap("R", "Reminders")
 hl.define_submap("TTS", function()
   submap_cmd("p", "Piper TTS ES", "bash -c 'pc=$(hostname | grep -qi hostgus && echo 1 || echo 0); ~/Scripts/piper_say$pc.sh'")
   submap_cmd("e", "Piper TTS EN", "~/Scripts/piper_say_en.sh")
-  hl.bind("ESCAPE", function() hl.dispatch(hl.dsp.submap("reset")) end)
+  hl.bind("ESCAPE", reset_submap)
 end)
 bind_submap("T", "TTS")
 
@@ -258,7 +305,7 @@ hl.define_submap("Volume", function()
   hl.bind("j", function() hl.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-") end, { repeat_trigger = true })
   hl.bind("J", function() hl.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-") end, { repeat_trigger = true })
   submap_cmd("m", "Mute Toggle", "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")
-  hl.bind("ESCAPE", function() hl.dispatch(hl.dsp.submap("reset")) end)
+  hl.bind("ESCAPE", reset_submap)
 end)
 
 hl.define_submap("Brightness", function()
@@ -266,5 +313,5 @@ hl.define_submap("Brightness", function()
   hl.bind("K", function() hl.exec_cmd("bash -c 'if (( $(brightnessctl get) <= 4800 )); then brightnessctl set 1%+; else brightnessctl set 5%+; fi'") end, { repeat_trigger = true })
   hl.bind("j", function() hl.exec_cmd("bash -c 'if (( $(brightnessctl get) <= 4800 )); then brightnessctl set 1%-; else brightnessctl set 5%-; fi'") end, { repeat_trigger = true })
   hl.bind("J", function() hl.exec_cmd("bash -c 'if (( $(brightnessctl get) <= 4800 )); then brightnessctl set 1%-; else brightnessctl set 5%-; fi'") end, { repeat_trigger = true })
-  hl.bind("ESCAPE", function() hl.dispatch(hl.dsp.submap("reset")) end)
+  hl.bind("ESCAPE", reset_submap)
 end)
