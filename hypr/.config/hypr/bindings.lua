@@ -16,14 +16,13 @@ local function submap_cmd(keys, description, command)
   end
 end
 
--- Helper to register a submap trigger for both lowercase and uppercase ALT+Key with visual tag notification
+-- Helper to register a submap trigger with visual tag notification (bound once per key)
 local function bind_submap(key_char, submap_name)
   local function enter_submap()
     hl.exec_cmd(string.format('hyprctl notify 1 2500 "rgb(cba6f7)" "State: %s"', submap_name))
     hl.dispatch(hl.dsp.submap(submap_name))
   end
 
-  hl.bind("ALT + " .. key_char:upper(), enter_submap)
   hl.bind("ALT + " .. key_char:lower(), enter_submap)
 end
 
@@ -75,10 +74,6 @@ hl.define_submap("System", function()
   submap_cmd("q", "Shutdown", "shutdown now")
 
   hl.bind("v", function()
-    hl.exec_cmd('hyprctl notify 1 2500 "rgb(cba6f7)" "State: Volume"')
-    hl.dispatch(hl.dsp.submap("Volume"))
-  end)
-  hl.bind("V", function()
     hl.exec_cmd('hyprctl notify 1 2500 "rgb(cba6f7)" "State: Volume"')
     hl.dispatch(hl.dsp.submap("Volume"))
   end)
