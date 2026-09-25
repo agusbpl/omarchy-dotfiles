@@ -5,212 +5,140 @@ import socket
 import signal
 
 SOCKET_PATH = f"/tmp/submap_hud_{os.getuid()}.sock"
+BINDINGS_LUA_PATHS = [
+    os.path.expanduser("~/.config/hypr/bindings.lua"),
+    os.path.expanduser("~/omarchy-dotfiles/hypr/.config/hypr/bindings.lua"),
+]
 
-SUBMAPS_DATA = {
-    "Hub": {
-        "icon": "⚡",
-        "title": "Alt Hub",
-        "tag": "MASTER SUBMAP [ALT + ENTER]",
-        "entries": [
-            ("s", "⚙️  System"),
-            ("l", "📚  Learning"),
-            ("p", "💻  Programming"),
-            ("o", "📝  Office"),
-            ("i", "🤖  AI"),
-            ("n", "🌐  Navigation"),
-            ("u", "🎓  UNLP"),
-            ("m", "🎨  Menus"),
-            ("r", "🔔  Reminders"),
-            ("t", "🗣️  TTS"),
-            ("v", "🔊  Volume..."),
-            ("b", "☀️  Brightness..."),
-        ],
-    },
-    "System": {
-        "icon": "⚙️",
-        "title": "System & Hardware",
-        "tag": "SUBMAP [ALT + S]",
-        "entries": [
-            ("f", "Files (Nautilus)"),
-            ("m", "Monitor (Btop)"),
-            ("e", "Edit Binds"),
-            ("w", "WiFi Menu"),
-            ("b", "Bluetooth Menu"),
-            ("c", "Activate Camera"),
-            ("r", "Start Recording"),
-            ("s", "Screenshot"),
-            ("a", "Audio Settings"),
-            ("p", "Clipboard History"),
-            ("v", "Volume Control..."),
-            ("l", "Brightness Control..."),
-            ("q", "Shutdown System"),
-        ],
-    },
-    "Learning": {
-        "icon": "📚",
-        "title": "Learning & Data Science",
-        "tag": "SUBMAP [ALT + L]",
-        "entries": [
-            ("c", "Cheatsheet Local"),
-            ("q", "Qtile Docs"),
-            ("b", "Bash Docs"),
-            ("v", "Vim Docs"),
-            ("y", "Python Docs"),
-            ("p", "Pandas Docs"),
-            ("o", "Polars Docs"),
-            ("m", "Matplotlib Docs"),
-            ("n", "NumPy Docs"),
-            ("s", "Streamlit Docs"),
-            ("t", "Plotly Docs"),
-            ("l", "SQL Cheat Sheet"),
-            ("g", "PostgreSQL Docs"),
-            ("d", "Data Science Menu"),
-            ("a", "Airflow Docs"),
-            ("r", "Relax RelAlg"),
-            ("h", "OpenStax Biology"),
-            ("j", "JupyterLab Docs"),
-            ("k", "Scikit-Learn Docs"),
-            ("f", "PyTorch Docs"),
-            ("e", "Metabase Docs"),
-            ("w", "TensorFlow Docs"),
-            ("u", "Numba Docs"),
-            ("i", "SciPy Docs"),
-            ("x", "Seaborn Docs"),
-            ("z", "Hugging Face Docs"),
-        ],
-    },
-    "Programming": {
-        "icon": "💻",
-        "title": "Programming & Dev",
-        "tag": "SUBMAP [ALT + P]",
-        "entries": [
-            ("e", "Zed Editor"),
-            ("t", "Terminal"),
-            ("j", "JupyterLab"),
-            ("g", "Lazygit"),
-            ("Shift+G", "GitHub Web"),
-            ("d", "Discord"),
-        ],
-    },
-    "Office": {
-        "icon": "📝",
-        "title": "Office & Documents",
-        "tag": "SUBMAP [ALT + O]",
-        "entries": [
-            ("n", "Obsidian"),
-            ("o", "OnlyOffice"),
-            ("d", "Google Docs"),
-            ("s", "Google Sheets"),
-            ("p", "Okular PDF"),
-            ("z", "Zathura PDF"),
-            ("t", "DeepL Translator"),
-            ("w", "WordReference"),
-            ("Shift+W", "Wikipedia ES"),
-            ("e", "Excalidraw"),
-        ],
-    },
-    "IA": {
-        "icon": "🤖",
-        "title": "AI & Language Models",
-        "tag": "SUBMAP [ALT + I]",
-        "entries": [
-            ("a", "Google Gemini"),
-            ("c", "Claude AI"),
-            ("g", "ChatGPT"),
-            ("m", "Google Gemini"),
-            ("p", "Perplexity AI"),
-            ("d", "DeepSeek Chat"),
-            ("k", "Kimi AI"),
-            ("n", "NotebookLM"),
-            ("o", "OpenCode TUI"),
-            ("x", "Grok AI"),
-            ("f", "Phind AI"),
-            ("v", "Voice Dictation"),
-        ],
-    },
-    "NAV": {
-        "icon": "🌐",
-        "title": "Navigation & Web",
-        "tag": "SUBMAP [ALT + N]",
-        "entries": [
-            ("b", "Web Browser"),
-            ("y", "YouTube"),
-            ("s", "YouTube Studio"),
-            ("t", "Telegram Web"),
-            ("w", "WhatsApp Web"),
-            ("x", "X / Twitter"),
-        ],
-    },
-    "UNLP": {
-        "icon": "🎓",
-        "title": "UNLP University",
-        "tag": "SUBMAP [ALT + U]",
-        "entries": [
-            ("a", "AU24 Económicas"),
-            ("l", "Cátedras LINTI"),
-            ("i", "IDEAS Informática"),
-            ("m", "Asignaturas Moodle"),
-        ],
-    },
-    "Menus": {
-        "icon": "🎨",
-        "title": "Omarchy Menus",
-        "tag": "SUBMAP [ALT + M]",
-        "entries": [
-            ("m", "Omarchy Main Menu"),
-            ("a", "Apps Menu"),
-            ("e", "Emojis Picker"),
-            ("b", "Background Switcher"),
-            ("t", "Theme Menu"),
-            ("s", "Share Menu"),
-            ("h", "Hardware Menu"),
-            ("v", "Toggle Top Bar"),
-            ("k", "Keybindings Menu"),
-        ],
-    },
-    "Reminders": {
-        "icon": "🔔",
-        "title": "Notifications & Reminders",
-        "tag": "SUBMAP [ALT + R]",
-        "entries": [
-            ("d", "Dismiss Notification"),
-            ("a", "Dismiss All Notifications"),
-            ("s", "Silence Notifications"),
-            ("h", "Notification History"),
-            ("n", "Set Reminder"),
-            ("v", "Show Reminders"),
-            ("c", "Clear Reminders"),
-        ],
-    },
-    "TTS": {
-        "icon": "🗣️",
-        "title": "Text to Speech (TTS)",
-        "tag": "SUBMAP [ALT + T]",
-        "entries": [
-            ("p", "Piper TTS ES (Spanish)"),
-            ("e", "Piper TTS EN (English)"),
-        ],
-    },
-    "Volume": {
-        "icon": "🔊",
-        "title": "Volume Control",
-        "tag": "QUICK ADJUST",
-        "entries": [
-            ("k / K", "+5% Volume Up"),
-            ("j / J", "-5% Volume Down"),
-            ("m", "Mute Toggle"),
-        ],
-    },
-    "Brightness": {
-        "icon": "☀️",
-        "title": "Brightness Control",
-        "tag": "QUICK ADJUST",
-        "entries": [
-            ("k / K", "Brightness Up"),
-            ("j / J", "Brightness Down"),
-        ],
-    },
+SUBMAP_METADATA = {
+    "Hub": {"icon": "⚡", "title": "Alt Hub", "tag": "MASTER SUBMAP [ALT + ENTER]"},
+    "System": {"icon": "⚙️", "title": "System & Hardware", "tag": "SUBMAP [ALT + S]"},
+    "Learning": {"icon": "📚", "title": "Learning & Data Science", "tag": "SUBMAP [ALT + L]"},
+    "Programming": {"icon": "💻", "title": "Programming & Dev", "tag": "SUBMAP [ALT + P]"},
+    "Office": {"icon": "📝", "title": "Office & Documents", "tag": "SUBMAP [ALT + O]"},
+    "IA": {"icon": "🤖", "title": "AI & Language Models", "tag": "SUBMAP [ALT + I]"},
+    "NAV": {"icon": "🌐", "title": "Navigation & Web", "tag": "SUBMAP [ALT + N]"},
+    "UNLP": {"icon": "🎓", "title": "UNLP University", "tag": "SUBMAP [ALT + U]"},
+    "Menus": {"icon": "🎨", "title": "Omarchy Menus", "tag": "SUBMAP [ALT + M]"},
+    "Reminders": {"icon": "🔔", "title": "Notifications & Reminders", "tag": "SUBMAP [ALT + R]"},
+    "TTS": {"icon": "🗣️", "title": "Text to Speech (TTS)", "tag": "SUBMAP [ALT + T]"},
+    "Volume": {"icon": "🔊", "title": "Volume Control", "tag": "QUICK ADJUST"},
+    "Brightness": {"icon": "☀️", "title": "Brightness Control", "tag": "QUICK ADJUST"},
 }
+
+HUB_ICONS = {
+    "System": "⚙️  System",
+    "Learning": "📚  Learning",
+    "Programming": "💻  Programming",
+    "Office": "📝  Office",
+    "IA": "🤖  AI",
+    "NAV": "🌐  Navigation",
+    "UNLP": "🎓  UNLP",
+    "Menus": "🎨  Menus",
+    "Reminders": "🔔  Reminders",
+    "TTS": "🗣️  TTS",
+    "Volume": "🔊  Volume...",
+    "Brightness": "☀️  Brightness...",
+}
+
+import re
+
+class BindingsLoader:
+    def __init__(self):
+        self.cached_data = {}
+        self.last_mtime = 0
+        self.active_file = None
+
+    def get_bindings_file(self):
+        for p in BINDINGS_LUA_PATHS:
+            if os.path.exists(p):
+                return p
+        return None
+
+    def get_data(self):
+        file_path = self.get_bindings_file()
+        if not file_path:
+            return self.cached_data
+
+        try:
+            mtime = os.path.getmtime(file_path)
+            if mtime != self.last_mtime or not self.cached_data:
+                self.cached_data = self._parse_file(file_path)
+                self.last_mtime = mtime
+                self.active_file = file_path
+        except Exception:
+            pass
+
+        return self.cached_data
+
+    def _parse_file(self, file_path):
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        submaps = {}
+        submap_pattern = re.compile(r"hl\.define_submap\s*\(\s*[\"'](\w+)[\"'],?\s*function\(\)(.*?)\bend\s*\)", re.DOTALL)
+
+        for sm_match in submap_pattern.finditer(content):
+            name = sm_match.group(1)
+            body = sm_match.group(2)
+
+            meta = SUBMAP_METADATA.get(name, {
+                "icon": "⚡",
+                "title": f"Submap: {name}",
+                "tag": f"SUBMAP [{name.upper()}]"
+            })
+
+            entries = []
+
+            if name == "Hub":
+                target_pattern = re.compile(r"keys\s*=\s*\{([^}]+)\}\s*,\s*name\s*=\s*[\"'](\w+)[\"']")
+                for t_match in target_pattern.finditer(body):
+                    raw_keys, target_name = t_match.groups()
+                    keys = [k.strip().strip("\"'") for k in raw_keys.split(",")]
+                    k = keys[0].lower()
+                    desc = HUB_ICONS.get(target_name, target_name)
+                    entries.append((k, desc))
+            elif name == "Volume":
+                entries = [
+                    ("k / K", "+5% Volume Up"),
+                    ("j / J", "-5% Volume Down"),
+                    ("m", "Mute Toggle"),
+                ]
+            elif name == "Brightness":
+                entries = [
+                    ("k / K", "Brightness Up"),
+                    ("j / J", "Brightness Down"),
+                ]
+            else:
+                cmd_pattern = re.compile(r"submap_cmd\s*\(\s*(?:\{([^}]+)\}|[\"']([^\"']+)[\"'])\s*,\s*[\"']([^\"']+)[\"']")
+                for cmd in cmd_pattern.finditer(body):
+                    raw_keys, single_key, desc = cmd.groups()
+                    if single_key:
+                        key_repr = single_key
+                    else:
+                        keys_list = [k.strip().strip("\"'") for k in raw_keys.split(",")]
+                        shift_keys = [k for k in keys_list if "shift" in k.lower()]
+                        if shift_keys:
+                            key_repr = shift_keys[0].replace("SHIFT + ", "Shift+").replace("Shift + ", "Shift+").replace("shift + ", "Shift+")
+                        else:
+                            key_repr = keys_list[0]
+                    entries.append((key_repr, desc))
+
+                link_pattern = re.compile(r"hl\.bind\s*\(\s*[\"'](\w+)[\"'].*?show_submap_cheatsheet\s*\(\s*[\"'](\w+)[\"']\s*\)", re.DOTALL)
+                for link in link_pattern.finditer(body):
+                    l_key, l_target = link.groups()
+                    entries.append((l_key, f"{l_target} Control..."))
+
+            submaps[name] = {
+                "icon": meta["icon"],
+                "title": meta["title"],
+                "tag": meta["tag"],
+                "entries": entries,
+            }
+
+        return submaps
+
+loader = BindingsLoader()
 
 CSS = """
 window {
@@ -444,7 +372,8 @@ def run_daemon(initial_submap=None):
                 GLib.source_remove(self.timer_id)
                 self.timer_id = None
 
-            data = SUBMAPS_DATA.get(submap_name, {
+            all_data = loader.get_data()
+            data = all_data.get(submap_name, {
                 "icon": "⚡",
                 "title": f"Submap: {submap_name}",
                 "tag": "CUSTOM SUBMAP",
